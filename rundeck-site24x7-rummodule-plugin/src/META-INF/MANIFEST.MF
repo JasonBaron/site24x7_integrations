@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Rundeck-Plugin-Description: Simple Plugin to include Site24x7 RUM stats for Rundeck
+Rundeck-Plugin-File-Version: 1.0.2
+Rundeck-Plugin-Date: 2018-08-30T13:04:20Z
+Rundeck-Plugin-URL: http://github.com/JasonBaron
+Rundeck-Plugin-Author: © 2018, Baron
+Rundeck-Plugin-Name: Site24x7 Rum Stats
+Rundeck-Plugin-Archive: true

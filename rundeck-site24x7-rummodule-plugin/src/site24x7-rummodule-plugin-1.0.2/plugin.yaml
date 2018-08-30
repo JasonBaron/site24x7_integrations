@@ -1,0 +1,16 @@
+name: include-site24x7-rummodule
+version: 1.0.3
+rundeckPluginVersion: 1.2
+author: JasonBaron
+date: Thur Aug 30 2018
+url: https://github.com/JasonBaron
+providers:
+  - name: include-site24x7-rummodule
+    service: UI
+    plugin-type: ui
+    title: "Include site24x7 JavaScript"
+    description: "A quick plugin module to insert Site24x7 into Rundeck"
+    ui:
+      - pages: '*'
+        scripts:
+          - js/addrummodule.js

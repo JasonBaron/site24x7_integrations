@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import json
+import sys
+
+PYTHON_MAJOR_VERSION = sys.version_info[0]
+
+if PYTHON_MAJOR_VERSION == 3:
+    import urllib
+    import urllib.request as connector
+elif PYTHON_MAJOR_VERSION == 2:
+    import urllib2 as connector
+
+# Config Section:
+HOST='HOSTNAME'
+PORT=''
+PATH='/sidekiq/stats'
+USERNAME = None   #Add the username if any authentication is set for ES stats api
+PASSWORD = None   #Add the password if any authentication is set for ES stats api
+
+#if any impacting changes to this plugin kindly increment the plugin version here.
+PLUGIN_VERSION = "1"
+
+#Setting this to true will alert you when there is a communication problem while posting plugin data to server
+HEARTBEAT = "true"
+
+METRICS_UNITS = {
+                'sidekiq_processed': 'count',
+                'sidekiq_failed': 'count',
+                'sidekiq_busy': 'count',
+                'sidekiq_processes': 'count',
+                'sidekiq_enqueued': 'count',
+                'sidekiq_scheduled': 'count',
+                'sidekiq_retries': 'count',
+                'sidekiq_dead': 'count',
+                'sidekiq_default_latency': 'ms',
+                'redis_uptime_in_days': 'count',
+                'redis_connected_clients': 'count'
+                }
+
+def metricCollector():
+    data = {}
+    data['plugin_version'] = PLUGIN_VERSION
+    data['heartbeat_required'] = HEARTBEAT
+    data['units'] = METRICS_UNITS
+
+    URL = 'http://{}:{}{}'.format(HOST, PORT, PATH)
+    try:
+        if USERNAME and PASSWORD:
+            password_mgr = connector.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(REALM, URL, USERNAME, PASSWORD)
+            auth_handler = connector.HTTPBasicAuthHandler(password_mgr)
+            opener = connector.build_opener(auth_handler)
+            connector.install_opener(opener)
+
+        response = connector.urlopen(URL, timeout=10)
+        byte_responseData = response.read()
+        str_responseData = byte_responseData.decode('UTF-8')
+        json_data = json.loads(str_responseData)
+
+        data['sidekiq_processed'] = json_data['sidekiq']['processed']
+        data['sidekiq_failed'] = json_data['sidekiq']['failed']
+        data['sidekiq_busy'] = json_data['sidekiq']['busy']
+        data['sidekiq_processes'] = json_data['sidekiq']['processes']
+        data['sidekiq_enqueued'] = json_data['sidekiq']['enqueued']
+        data['sidekiq_scheduled'] = json_data['sidekiq']['scheduled']
+        data['sidekiq_retries'] = json_data['sidekiq']['retries']
+        data['sidekiq_dead'] = json_data['sidekiq']['dead']
+        data['sidekiq_default_latency'] = json_data['sidekiq']['default_latency']
+        data['redis_version'] = json_data['redis']['redis_version']
+        data['redis_uptime_in_days'] = json_data['redis']['uptime_in_days']
+        data['redis_connected_clients'] = json_data['redis']['connected_clients']
+        data['redis_used_memory_human'] = json_data['redis']['used_memory_human']
+        data['redis_used_memory_peak_human'] = json_data['redis']['used_memory_peak_human']
+    except Exception as e:
+        data['status'] = 0
+        data['msg'] = str(e)
+
+    return data
+
+if __name__ == "__main__":
+    print(json.dumps(metricCollector(), indent=4, sort_keys=True))
